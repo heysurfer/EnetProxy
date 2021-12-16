@@ -1,14 +1,14 @@
 # Growtopia enet proxy
 
-# Download release for V3.51 [here](https://github.com/ama6nen/enetproxy/releases/tag/V3.51)
-# NOTE: This is not an internal cheat. Proxy is not an internal cheat in any way or form.
-## For internal see [this](https://github.com/ama6nen/INZERNAL), my new internal project.
 
 ## Don't add me in discord for help with compiling/adding feature/some simple thing with proxy or you will get instantly blocked
 
 Ayyware for gt at this point 
 
 Anyone using or selling "fixed proxy" is a human failure
+
+# By [loanselot](https://github.com/loanselot)
+
 
 ## How to use
 * Does not need separate http server
