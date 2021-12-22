@@ -211,9 +211,7 @@ bool events::out::generictext(std::string packet) {
         var.set("hash", std::to_string(utils::random(INT_MIN, INT_MAX)));
         var.set("hash2", std::to_string(hash2));
         var.set("meta", utils::random(utils::random(6, 10)) + ".com");
-        var.set("game_version", gt::version);
         var.set("country", gt::flag);
-
         /*
         AAP Bypass
         Only making this public because after 1 month being reported to ubi, nothing happened
