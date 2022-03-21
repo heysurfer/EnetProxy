@@ -71,8 +71,8 @@ int main() {
     SetConsoleTitleA("proxy by ama");
 #endif
     printf("enet proxy by ama\n");
-    setgtserver(); //parse ip & port
     SetConsoleCtrlHandler(exit_handler, true);//auto host
+    setgtserver(); //parse ip & port
 
     std::thread http(http::run, "127.0.0.1", "17191");
     http.detach();
