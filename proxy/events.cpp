@@ -210,26 +210,8 @@ bool events::out::generictext(std::string packet) {
         var.set("zf", std::to_string(utils::random(INT_MIN, INT_MAX)));
         var.set("hash", std::to_string(utils::random(INT_MIN, INT_MAX)));
         var.set("hash2", std::to_string(hash2));
-        var.set("meta", utils::random(utils::random(6, 10)) + ".com");
+        var.set("meta", g_server->meta);
         var.set("country", gt::flag);
-        /*
-        AAP Bypass
-        Only making this public because after 1 month being reported to ubi, nothing happened
-        Then after a month (around 15.3) it got fixed for a whole single 1 day, and they publicly said it had been fixed
-        And at that time we shared how to do it because thought its useless, and then aap bypass started working again
-        and then 9999 new aap bypass services came to be public, and even playingo started selling it so no point keeping it private
-        With publishing this I hope ubi actually does something this time
-        */
-
-        //Finally patched, I guess they finally managed to fix this after maybe a year!
-
-        //if (var.find("tankIDName") && gt::aapbypass) {
-        //    var.find("mac")->m_values[0] = "02:00:00:00:00:00";
-        //    var.find("platformID")->m_values[0] = "4"; //android
-        //    var.remove("fz");
-        //    var.remove("rid");
-        //}
-
         packet = var.serialize();
         gt::in_game = false;
         PRINTS("Spoofing login info\n");
