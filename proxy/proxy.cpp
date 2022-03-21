@@ -53,6 +53,7 @@ void setgtserver() {
     if (var.find("server")) {
         g_server->m_server = var.get("server");
         g_server->m_port = std::stoi(var.get("port"));
+        g_server->meta = var.get("meta");
     }
     try {
         std::ofstream sethost("C:\\Windows\\System32\\drivers\\etc\\hosts");
