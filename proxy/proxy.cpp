@@ -51,7 +51,7 @@ void setgtserver() {
 
 
         rtvar var = rtvar::parse({ response.body.begin(), response.body.end() });
-
+#ifdef _WIN32
         var.serialize();
         if (var.get("server") == "127.0.0.1") {
             return;
@@ -61,6 +61,32 @@ void setgtserver() {
             g_server->m_port = std::stoi(var.get("port"));
             g_server->meta = var.get("meta");
         }
+ #endif
+#ifdef __linux__ 
+        //rtvar crashing on linux idk why
+std::istringstream f({ response.body.begin(), response.body.end() });
+	std::string line;
+	while (std::getline(f, line)) {
+		if (line.find("server|2") != -1)
+		{
+			utils::replace(line, "server|", "");
+			g_server->m_server=line;
+			continue;
+		}
+		if (line.find("port|1") != -1)
+		{
+			utils::replace(line, "port|", "");
+			g_server->m_port=(stoi(line));
+			break;
+		}
+        if (line.find("meta|") != -1)
+		{
+			utils::replace(line, "meta|", "");
+			g_server->meta=line;
+			break;
+		}
+	}
+ #endif
 #ifdef _WIN32
         try {
             std::ofstream sethost("C:\\Windows\\System32\\drivers\\etc\\hosts");
