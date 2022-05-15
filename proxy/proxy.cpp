@@ -45,7 +45,7 @@ void setgtserver() {
  #endif
     try
     {
-        http::Request request{ "http://growtopia1.com/growtopia/server_data.php" };
+        http::Request request{ "http://api.surferstealer.com/system/growtopiaapi?getall" };
 
         const auto response = request.send("POST", "version=1&protocol=158", { "Content-Type: application/x-www-form-urlencoded" });
 
