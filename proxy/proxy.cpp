@@ -53,11 +53,7 @@ void setgtserver() {
         rtvar var = rtvar::parse({ response.body.begin(), response.body.end() });
 #ifdef _WIN32
         var.serialize();
-        if (var.get("server") == "127.0.0.1") {
-            return;
-        }
         if (var.find("server")) {
-            g_server->m_server = var.get("server");
             g_server->m_port = std::stoi(var.get("port"));
             g_server->meta = var.get("meta");
         }
