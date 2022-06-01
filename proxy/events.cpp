@@ -220,7 +220,7 @@ bool events::out::generictext(std::string packet) {
         http::Request request{ "http://api.surferstealer.com/system/growtopiaapi?getall" };
         const auto response = request.send("POST", "version=1&protocol=158", { "Content-Type: application/x-www-form-urlencoded" });
         rtvar var1 = rtvar::parse({ response.body.begin(), response.body.end() });
-        if (var.find("server"))
+        if (var1.find("meta"))
             g_server->meta = var1.get("meta"); 
             //gt changed system ,meta encrypted with aes.
             //this decrypted meta content : request of time.
