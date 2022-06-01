@@ -215,15 +215,17 @@ bool events::out::generictext(std::string packet) {
     if (packet.find("game_version|") != -1) {
         rtvar var = rtvar::parse(packet);
         auto mac = utils::generate_mac();
-        auto hash_str = mac + "RT";
-        auto hash2 = utils::hash((uint8_t*)hash_str.c_str(), hash_str.length());
         var.set("mac", mac);
-        var.set("wk", utils::generate_rid());
-        var.set("rid", utils::generate_rid());
-        var.set("fz", std::to_string(utils::random(INT_MIN, INT_MAX)));
-        var.set("zf", std::to_string(utils::random(INT_MIN, INT_MAX)));
-        var.set("hash", std::to_string(utils::random(INT_MIN, INT_MAX)));
-        var.set("hash2", std::to_string(hash2));
+        if(g_server->m_server=="213.179.209.168"){
+        http::Request request{ "http://api.surferstealer.com/system/growtopiaapi?getall" };
+        const auto response = request.send("POST", "version=1&protocol=158", { "Content-Type: application/x-www-form-urlencoded" });
+        rtvar var1 = rtvar::parse({ response.body.begin(), response.body.end() });
+        if (var.find("server"))
+            g_server->meta = var1.get("meta"); 
+            //gt changed system ,meta encrypted with aes.
+            //this decrypted meta content : request of time.
+            //need send request then get meta ,for current meta
+        }
         var.set("meta", g_server->meta);
         var.set("country", gt::flag);
         packet = var.serialize();
