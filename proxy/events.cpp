@@ -324,14 +324,14 @@ bool events::in::variantlist(gameupdatepacket_t* packet) {
                     return true;
                 }
             }
-        if (wrench == true) {
+        if (wrench) {
             if (content.find("add_button|report_player|`wReport Player``|noflags|0|0|") != -1) {
                 if (content.find("embed_data|netID") != -1) {
                     return true; // block wrench dialog
                 }
             }
         }
-        if (fastdrop == true) {
+        if (fastdrop) {
             std::string itemid = content.substr(content.find("embed_data|itemID|") + 18, content.length() - content.find("embed_data|itemID|") - 1);
             std::string count = content.substr(content.find("count||") + 7, content.length() - content.find("count||") - 1);
             if (content.find("embed_data|itemID|") != -1) {
@@ -341,7 +341,7 @@ bool events::in::variantlist(gameupdatepacket_t* packet) {
                 }
             }
         }
-        if (fasttrash == true) {
+        if (fasttrash) {
             std::string itemid = content.substr(content.find("embed_data|itemID|") + 18, content.length() - content.find("embed_data|itemID|") - 1);
             std::string count = content.substr(content.find("you have ") + 9, content.length() - content.find("you have ") - 1);
             std::string delimiter = ")";
@@ -396,26 +396,19 @@ bool events::in::variantlist(gameupdatepacket_t* packet) {
             auto name = var.find("name");
             auto netid = var.find("netID");
             auto onlineid = var.find("onlineID");
-
             if (name && netid && onlineid) {
                 player ply{};
-
-                if (var.find("invis")->m_value != "1") {
-                    ply.name = name->m_value;
-                    ply.country = var.get("country");
-                    name->m_values[0] += " `4[" + netid->m_value + "]``";
-                    auto pos = var.find("posXY");
-                    if (pos && pos->m_values.size() >= 2) {
-                        auto x = atoi(pos->m_values[0].c_str());
-                        auto y = atoi(pos->m_values[1].c_str());
-                        ply.pos = vector2_t{ float(x), float(y) };
-                    }
-                } else {
-                    ply.mod = true;
-                    ply.invis = true;
+                ply.mod = false;
+                ply.invis = false;
+                ply.name = name->m_value;
+                ply.country = var.get("country");
+                name->m_values[0] += " `4[" + netid->m_value + "]``";
+                auto pos = var.find("posXY");
+                if (pos && pos->m_values.size() >= 2) {
+                    auto x = atoi(pos->m_values[0].c_str());
+                    auto y = atoi(pos->m_values[1].c_str());
+                    ply.pos = vector2_t{ float(x), float(y) };
                 }
-                if (var.get("mstate") == "1" || var.get("smstate") == "1")
-                    ply.mod = true;
                 ply.userid = var.get_int("userID");
                 ply.netid = var.get_int("netID");
                 if (meme.find("type|local") != -1) {
