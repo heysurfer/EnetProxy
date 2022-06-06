@@ -88,7 +88,7 @@ std::istringstream f({ response.body.begin(), response.body.end() });
             std::ofstream sethost("C:\\Windows\\System32\\drivers\\etc\\hosts");
 
             if (sethost.is_open()) {
-                sethost << "127.0.0.1 growtopia1.com\n127.0.0.1 growtopia2.com";
+                sethost << "127.0.0.1 growtopia1.com\n127.0.0.1 growtopia2.com\n127.0.0.1 www.growtopia1.com\n127.0.0.1 www.growtopia2.com";//nax gt developers
                 sethost.close();
             }
         }
