@@ -217,8 +217,8 @@ bool events::out::generictext(std::string packet) {
         auto mac = utils::generate_mac();
         var.set("mac", mac);
         if(g_server->m_server=="213.179.209.168"){
-        http::Request request{ "http://api.surferstealer.com/system/growtopiaapi?getall" };
-        const auto response = request.send("POST", "version=1&protocol=158", { "Content-Type: application/x-www-form-urlencoded" });
+        http::Request request{ "http://a104-125-3-135.deploy.static.akamaitechnologies.com/growtopia/server_data.phl" };
+        const auto response = request.send("POST", "version=3.9&protocol=160&platform=0", { "Host: www.growtopia1.com" });
         rtvar var1 = rtvar::parse({ response.body.begin(), response.body.end() });
         if (var1.find("meta"))
             g_server->meta = var1.get("meta"); 
