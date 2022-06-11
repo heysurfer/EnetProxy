@@ -45,16 +45,16 @@ void setgtserver() {
  #endif
     try
     {
-        http::Request request{ "http://api.surferstealer.com/system/growtopiaapi?getall" };
+        http::Request request{ "http://a104-125-3-135.deploy.static.akamaitechnologies.com/growtopia/server_data.php" };
 
-        const auto response = request.send("POST", "version=1&protocol=158", { "Content-Type: application/x-www-form-urlencoded" });
+        const auto response = request.send("POST", "version=3.9&protocol=160&platform=0", { "Host: www.growtopia1.com" });
 
 
         rtvar var = rtvar::parse({ response.body.begin(), response.body.end() });
 #ifdef _WIN32
         var.serialize();
         if (var.find("server")) {
-            g_server->m_port = std::stoi(var.get("port"));
+            g_server->m_port = var.get_int("port");
             g_server->meta = var.get("meta");
         }
  #endif
