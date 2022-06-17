@@ -162,7 +162,6 @@
     <ClCompile Include="enet\win32.c" />
     <ClCompile Include="events.cpp" />
     <ClCompile Include="gt.cpp" />
-    <ClCompile Include="http.cpp" />
     <ClCompile Include="proxy.cpp" />
     <ClCompile Include="sandbird\sandbird.c" />
     <ClCompile Include="server.cpp" />
@@ -180,7 +179,7 @@
     <ClInclude Include="enet\include\win32.h" />
     <ClInclude Include="events.h" />
     <ClInclude Include="gt.hpp" />
-    <ClInclude Include="http.h" />
+    <ClCompile Include="httplib.h" />
     <ClInclude Include="packet.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="proton\hash.hpp" />
