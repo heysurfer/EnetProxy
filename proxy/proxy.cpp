@@ -15,6 +15,7 @@
 #include "HTTPRequest.hpp"
 #pragma comment( lib, "Advapi32.lib" )
 #pragma comment( lib, "User32.lib" )
+#pragma comment( lib, "winmm.lib" )
 
 std::string decodeBase64(const std::string& base64Text)
 {
