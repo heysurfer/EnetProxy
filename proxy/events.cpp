@@ -8,7 +8,8 @@
 #include <thread>
 #include <limits.h>
 #include "HTTPRequest.hpp"
-
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
 bool events::out::variantlist(gameupdatepacket_t* packet) {
     variantlist_t varlist{};
     varlist.serialize_from_mem(utils::get_extended(packet));
