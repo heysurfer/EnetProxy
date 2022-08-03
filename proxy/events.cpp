@@ -8,7 +8,8 @@
 #include <thread>
 #include <limits.h>
 #include "HTTPRequest.hpp"
-
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
 bool events::out::variantlist(gameupdatepacket_t* packet) {
     variantlist_t varlist{};
     varlist.serialize_from_mem(utils::get_extended(packet));
@@ -217,9 +218,15 @@ bool events::out::generictext(std::string packet) {
         auto mac = utils::generate_mac();
         var.set("mac", mac);
         if(g_server->m_server=="213.179.209.168"){
-        http::Request request{ "http://a104-125-3-135.deploy.static.akamaitechnologies.com/growtopia/server_data.php" };
-        const auto response = request.send("POST", "version=3.9&protocol=160&platform=0", { "Host: www.growtopia1.com" });
-        rtvar var1 = rtvar::parse({ response.body.begin(), response.body.end() });
+         using namespace httplib;
+        Headers Header;
+        Header.insert(std::make_pair("User-Agent", "UbiServices_SDK_2019.Release.27_PC64_unicode_static"));
+        Header.insert(std::make_pair("Host", "www.growtopia1.com"));
+        Client cli("https://104.125.3.135");
+        cli.set_default_headers(Header);
+        cli.enable_server_certificate_verification(false);
+        auto res = cli.Post("/growtopia/server_data.php");
+        rtvar var1 = rtvar::parse({ res->body });
         if (var1.find("meta"))
             g_server->meta = var1.get("meta"); 
             //gt changed system ,meta encrypted with aes.
