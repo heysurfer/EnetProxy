@@ -141,7 +141,6 @@ void setgtserver() {
 	sethost.close();
     }
 }
-}
 
 int main() {
 #ifdef _WIN32
