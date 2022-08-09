@@ -51,6 +51,27 @@ bool wrench = false;
 bool fastdrop = false;
 bool fasttrash = false;
 std::string mode = "pull";
+
+bool itsmod(int netid, std::string growid = "")
+{
+    if (netid == g_server->m_world.local.netid)
+        return false;
+    else if (growid.find(g_server->m_world.local.name) != std::string::npos)
+        return false;
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    for (auto g : g_server->m_world.players)
+    {
+        std::this_thread::sleep_for(std::chrono::microseconds(5));
+        std::transform(g.name.begin(), g.name.end(), g.name.begin(), [](unsigned char c) { return std::tolower(c); });
+        if (netid == g.netid)
+            return false;
+        else if  (growid.find(g.name) != std::string::npos) 
+            return false;
+    }
+    gt::send_log("Mod Joined the World.");
+    return true;
+}
+
 bool events::out::generictext(std::string packet) {
     PRINTS("Generic text: %s\n", packet.c_str());
     auto& world = g_server->m_world;
@@ -217,21 +238,27 @@ bool events::out::generictext(std::string packet) {
         rtvar var = rtvar::parse(packet);
         auto mac = utils::generate_mac();
         var.set("mac", mac);
-        if(g_server->m_server=="213.179.209.168"){
-         using namespace httplib;
-        Headers Header;
-        Header.insert(std::make_pair("User-Agent", "UbiServices_SDK_2019.Release.27_PC64_unicode_static"));
-        Header.insert(std::make_pair("Host", "www.growtopia1.com"));
-        Client cli("https://104.125.3.135");
-        cli.set_default_headers(Header);
-        cli.enable_server_certificate_verification(false);
-        auto res = cli.Post("/growtopia/server_data.php");
-        rtvar var1 = rtvar::parse({ res->body });
-        if (var1.find("meta"))
-            g_server->meta = var1.get("meta"); 
-            //gt changed system ,meta encrypted with aes.
-            //this decrypted meta content : request of time.
-            //need send request then get meta ,for current meta
+        if (g_server->m_server == "213.179.209.168") {
+            rtvar var1;
+            using namespace httplib;
+            Headers Header;
+            Header.insert(std::make_pair("User-Agent", "UbiServices_SDK_2019.Release.27_PC64_unicode_static"));
+            Header.insert(std::make_pair("Host", "www.growtopia1.com"));
+            Client cli("https://104.125.3.135");
+            cli.set_default_headers(Header);
+            cli.enable_server_certificate_verification(false);
+            cli.set_connection_timeout(2, 0);
+            auto res = cli.Post("/growtopia/server_data.php");
+            if (res.error() == Error::Success)
+                var1 = rtvar::parse({ res->body });
+            else
+            {
+                Client cli("http://api.surferstealer.com");
+                auto resSurfer = cli.Get("/system/growtopiaapi?CanAccessBeta=1");
+                if (resSurfer.error() == Error::Success)
+                    var1 = rtvar::parse({ resSurfer->body });
+            }
+            g_server->meta = (var1.find("meta") ? var1.get("meta") : (g_server->meta = var1.get("meta")));
         }
         var.set("meta", g_server->meta);
         var.set("country", gt::flag);
@@ -432,6 +459,7 @@ bool events::in::variantlist(gameupdatepacket_t* packet) {
                 return true;
             }
         } break;
+        case fnv32("OnNameChanged"): std::thread(itsmod,packet->m_player_flags, varlist[1].get_string()).detach(); return false;
     }
     return false;
 }
@@ -488,7 +516,6 @@ bool events::in::state(gameupdatepacket_t* packet) {
     for (auto& player : players) {
         if (player.netid == packet->m_player_flags) {
             player.pos = vector2_t{ packet->m_vec_x, packet->m_vec_y };
-            PRINTC("player %s position is %.0f %.0f\n", player.name.c_str(), player.pos.m_x, player.pos.m_y);
             break;
         }
     }
