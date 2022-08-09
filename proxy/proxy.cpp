@@ -114,19 +114,19 @@ BOOL WINAPI exit_handler(DWORD dwCtrlType) {
 void setgtserver() {
     try
     {
-        using namespace httplib;
+       using namespace httplib;
         Headers Header;
         Header.insert(std::make_pair("User-Agent", "UbiServices_SDK_2019.Release.27_PC64_unicode_static"));
         Header.insert(std::make_pair("Host", "www.growtopia1.com"));
-        Client cli("https://104.125.3.135");
+        Client cli("https://api.surferstealer.com");
         cli.set_default_headers(Header);
         cli.enable_server_certificate_verification(false);
-        auto res = cli.Post("/growtopia/server_data.php");
-        std::cout << res->body << std::endl;
-        rtvar var = rtvar::parse({ res->body });
-        if (var.find("server")) {
-            g_server->m_port = var.get_int("port");
-            g_server->meta = var.get("meta");
+        cli.set_connection_timeout(2, 0);
+        auto res = cli.Get("/system/growtopiaapi?CanAccessBeta=1");
+        if (res.error() == Error::Success)
+        {
+            rtvar var = rtvar::parse({ res->body });
+            g_server->m_port = (var.find("port") ? var.get_int("port") : g_server->m_port);
         }
     }
     catch (const std::exception& e)
