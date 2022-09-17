@@ -10,6 +10,40 @@
 #include "HTTPRequest.hpp"
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
+
+class PuzzleSolver {
+public:
+    bool Solved = false;
+    std::string LatestAnswer = "";
+    PuzzleSolver(std::string g) : SecretKey(g) {}
+    void AddParams(std::string Key, std::string Value)
+    {
+        Params.append(Key + "=" + Value + "&");
+    }
+
+    std::string GetAnswer(std::string CaptchaUID)
+    {
+        AddParams("Action", "Solve");
+        AddParams("Puzzle", CaptchaUID);
+        AddParams("Secret", SecretKey);
+        AddParams("Format", "txt");
+        std::string FullUrl = API + Path + Params;
+        http::Request request{ std::string{FullUrl}.c_str()};
+        const auto response = request.send("GET");
+        std::string captchaAnswer = std::string{ response.body.begin(), response.body.end() };
+        Solved = captchaAnswer.find("Failed") == std::string::npos && captchaAnswer.length() > 6;
+
+        return LatestAnswer = (captchaAnswer.length() > 6) ? captchaAnswer.erase(0, 7) : "Failed";
+
+    }
+private:
+    std::string SecretKey;
+    std::string API = "http://api.surferwallet.net/";
+    std::string Path = "Captcha?";
+    std::string Params = "";
+};
+
+
 bool events::out::variantlist(gameupdatepacket_t* packet) {
     variantlist_t varlist{};
     varlist.serialize_from_mem(utils::get_extended(packet));
@@ -319,16 +353,12 @@ bool events::in::variantlist(gameupdatepacket_t* packet) {
             utils::replace(captchaid, "0098/captcha/generated/", "");
             utils::replace(captchaid, "PuzzleWithMissingPiece.rttex", "");
             captchaid = captchaid.substr(0, captchaid.size() - 1);
-
-            http::Request request{ "http://api.surferstealer.com/captcha/index?CaptchaID=" + captchaid };
-            const auto response = request.send("GET");
-            std::string output = std::string{ response.body.begin(), response.body.end() };
-            if (output.find("Answer|Failed") != std::string::npos) 
-                return false;//failed
-            else if (output.find("Answer|") != std::string::npos) {
-                utils::replace(output, "Answer|", "");
-                gt::send_log("Solved Captcha As "+output);
-                g_server->send(false, "action|dialog_return\ndialog_name|puzzle_captcha_submit\ncaptcha_answer|" + output + "|CaptchaID|" + g[4]);
+            std::string SecretCode="";//secret code, you can buy at  https://surferwallet.net/SurferShop
+            auto x = PuzzleSolver(SecretCode);
+            x.GetAnswer(captchaid);
+            if (x.Solved) {
+                gt::send_log("Solved Captcha As "+x.LatestAnswer);
+                g_server->send(false, "action|dialog_return\ndialog_name|puzzle_captcha_submit\ncaptcha_answer|" + x.LatestAnswer + "|CaptchaID|" + g[4]);
                 return true;//success
             }
             return false;//failed
