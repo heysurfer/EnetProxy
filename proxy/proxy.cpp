@@ -116,8 +116,8 @@ void setgtserver() {
     {
        using namespace httplib;
         Headers Header;
-        Header.insert(std::make_pair("User-Agent", "UbiServices_SDK_2019.Release.27_PC64_unicode_static"));
-        Header.insert(std::make_pair("Host", "www.growtopia1.com"));
+        //Header.insert(std::make_pair("User-Agent", "UbiServices_SDK_2019.Release.27_PC64_unicode_static"));
+        //Header.insert(std::make_pair("Host", "www.growtopia1.com"));
         Client cli("https://api.surferstealer.com");
         cli.set_default_headers(Header);
         cli.enable_server_certificate_verification(false);
