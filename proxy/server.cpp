@@ -327,18 +327,18 @@ bool server::sendEnetPacket(ENetPacket* packet, bool client)
         goto failed;
     if (peer->state != ENET_PEER_STATE_CONNECTED)
     {
-        printf("Error %s", "The packet could not be sent due to the peer state not connected.");
+        printf("Error %s\n", "The packet could not be sent due to the peer state not connected.");
         goto failed;
     }
     else if (enet_list_size(&host->peers->sentReliableCommands) > 50)
     {
-        printf("Error %s","Packets have been cleared due to an excessive accumulation of packets.");
+        printf("Error %s\n","Packets have been cleared due to an excessive accumulation of packets.");
         enet_list_clear(&host->peers->sentReliableCommands);
         goto failed;
     }
     else if (enet_peer_send(peer, 0, packet) != 0)
     {
-        printf("Error %s", "The packet could not be sent due to the enet_peer_send function return false");
+        printf("Error %s\n", "The packet could not be sent due to the enet_peer_send function return false");
         enet_packet_destroy(packet);
         goto failed;
     }
@@ -352,6 +352,7 @@ bool server::sendEnetPacket(ENetPacket* packet, bool client)
 
     return true;
 failed:
+    unlockThread();
     return false;
 }
 //bool client: true - sends to growtopia client    false - sends to gt server
