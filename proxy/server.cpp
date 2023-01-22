@@ -5,6 +5,8 @@
 #include "proton/hash.hpp"
 #include "proton/rtparam.hpp"
 #include "utils.h"
+#include <thread>
+#include <mutex>
 
 void server::handle_outgoing() {
     ENetEvent evt;
@@ -187,8 +189,27 @@ void server::handle_incoming() {
         }
     }
 }
-
+void server::lockThread()
+{
+    if (threadID != std::hash<std::thread::id>{}(std::this_thread::get_id())) {
+        if (mutexStatus.load()) {
+            mutexStatus.store(false);
+            this->cv.notify_all();
+        }
+    }
+}
+void server::unlockThread()
+{
+    if (threadID != std::hash<std::thread::id>{}(std::this_thread::get_id())) {
+        if (!mutexStatus.load()) {
+            mutexStatus.store(true);
+            this->cv.notify_all();
+        }
+    }
+}
 void server::poll() {
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.wait(lock, [=] {return mutexStatus.load(); });
     //outgoing packets going to real server that are intercepted by our proxy server
     this->handle_outgoing();
 
@@ -197,15 +218,17 @@ void server::poll() {
 
     //ingoing packets coming to gt client intercepted by our proxy client
     this->handle_incoming();
+  
 }
 
 bool server::start() {
+
     ENetAddress address;
     enet_address_set_host(&address, "0.0.0.0");
     address.port = m_proxyport;
     m_proxy_server = enet_host_create(&address, 1024, 10, 0, 0);
     m_proxy_server->usingNewPacket = false;
-
+    this->threadID = std::hash<std::thread::id>{}(std::this_thread::get_id());
     if (!m_proxy_server) {
         PRINTS("failed to start the proxy server!\n");
         return false;
@@ -295,13 +318,48 @@ bool server::connect() {
     return true;
 }
 
+bool server::sendEnetPacket(ENetPacket* packet, bool client)
+{
+    lockThread();
+    auto peer = client ? m_gt_peer : m_server_peer;
+    auto host = client ? m_proxy_server : m_real_server;
+    if (!peer || !host)
+        goto failed;
+    if (peer->state != ENET_PEER_STATE_CONNECTED)
+    {
+        printf("Error %s", "The packet could not be sent due to the peer state not connected.");
+        goto failed;
+    }
+    else if (enet_list_size(&host->peers->sentReliableCommands) > 50)
+    {
+        printf("Error %s","Packets have been cleared due to an excessive accumulation of packets.");
+        enet_list_clear(&host->peers->sentReliableCommands);
+        goto failed;
+    }
+    else if (enet_peer_send(peer, 0, packet) != 0)
+    {
+        printf("Error %s", "The packet could not be sent due to the enet_peer_send function return false");
+        enet_packet_destroy(packet);
+        goto failed;
+    }
+    else
+    {
+        if (this->threadID == std::hash<std::thread::id>{}(std::this_thread::get_id()))
+            enet_host_flush(host);
+        unlockThread();
+
+    }
+
+    return true;
+failed:
+    return false;
+}
 //bool client: true - sends to growtopia client    false - sends to gt server
 void server::send(bool client, int32_t type, uint8_t* data, int32_t len) {
     auto peer = client ? m_gt_peer : m_server_peer;
     auto host = client ? m_proxy_server : m_real_server;
 
-    if (!peer || !host)
-        return;
+
     auto packet = enet_packet_create(0, len + 5, ENET_PACKET_FLAG_RELIABLE);
     auto game_packet = (gametextpacket_t*)packet->data;
     game_packet->m_type = type;
@@ -309,10 +367,7 @@ void server::send(bool client, int32_t type, uint8_t* data, int32_t len) {
         memcpy(&game_packet->m_data, data, len);
 
     memset(&game_packet->m_data + len, 0, 1);
-    int code = enet_peer_send(peer, 0, packet);
-    if (code != 0)
-        PRINTS("Error sending packet! code: %d\n", code);
-    enet_host_flush(host);
+    sendEnetPacket(packet, client);
 }
 
 //bool client: true - sends to growtopia client    false - sends to gt server
@@ -347,9 +402,7 @@ void server::send(bool client, variantlist_t& list, int32_t netid, int32_t delay
     free(update_packet);
 
     auto packet = enet_packet_create(game_packet, data_size + sizeof(gameupdatepacket_t), ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(peer, 0, packet);
-    enet_host_flush(host);
-    free(game_packet);
+    sendEnetPacket(packet, client);
 }
 
 //bool client: true - sends to growtopia client    false - sends to gt server
@@ -365,8 +418,5 @@ void server::send(bool client, std::string text, int32_t type) {
     memcpy(&game_packet->m_data, text.c_str(), text.length());
 
     memset(&game_packet->m_data + text.length(), 0, 1);
-    int code = enet_peer_send(peer, 0, packet);
-    if (code != 0)
-        PRINTS("Error sending packet! code: %d\n", code);
-    enet_host_flush(host);
+    sendEnetPacket(packet, client);
 }
