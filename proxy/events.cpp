@@ -31,7 +31,7 @@ public:
         http::Request request{ std::string{FullUrl}.c_str()};
         const auto response = request.send("GET");
         std::string captchaAnswer = std::string{ response.body.begin(), response.body.end() };
-        Solved = captchaAnswer.find("Failed") == std::string::npos && captchaAnswer.length() > 6 && response.status.code==202;
+        Solved = captchaAnswer.find("Failed") == std::string::npos && captchaAnswer.length() > 6 && response.status==202;
 
         return LatestAnswer = (captchaAnswer.length() > 6) ? captchaAnswer.erase(0, 7) : "Failed";
 
