@@ -3,6 +3,8 @@
 #include "proton/variant.hpp"
 #include "enet/include/enet.h"
 #include "world.h"
+#include <condition_variable>
+#include <mutex>
 
 class server {
    private:
@@ -39,6 +41,12 @@ class server {
     void send(bool client, variantlist_t& list, int32_t netid = -1, int32_t delay = 0);
     void send(bool client, std::string packet, int32_t type = 2);
     void poll();
+    void lockThread();
+    void unlockThread();
+    std::mutex mutex;
+    std::atomic<bool> mutexStatus;
+    uint32_t threadID;
+    std::condition_variable cv;
 };
 extern server* g_server;
 
