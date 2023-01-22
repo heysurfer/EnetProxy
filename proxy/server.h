@@ -40,6 +40,7 @@ class server {
     void send(bool client, int32_t type, uint8_t* data, int32_t len);
     void send(bool client, variantlist_t& list, int32_t netid = -1, int32_t delay = 0);
     void send(bool client, std::string packet, int32_t type = 2);
+    bool sendEnetPacket(ENetPacket* packet, bool client);
     void poll();
     void lockThread();
     void unlockThread();
