@@ -153,6 +153,7 @@ int main() {
     httpS.detach();
     printf("HTTPS server is running.\n");
     enet_initialize();
+    g_server->unlockThread();
     if (g_server->start()) {
         printf("Server & client proxy is running.\n");
         while (true) {
