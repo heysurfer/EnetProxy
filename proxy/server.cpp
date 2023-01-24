@@ -330,7 +330,7 @@ bool server::sendEnetPacket(ENetPacket* packet, bool client)
         printf("Error %s\n", "The packet could not be sent due to the peer state not connected.");
         goto failed;
     }
-    else if (enet_list_size(&host->peers->sentReliableCommands) > 50)
+    else if (!client && enet_list_size(&host->peers->sentReliableCommands) > 50)
     {
         printf("Error %s\n","Packets have been cleared due to an excessive accumulation of packets.");
         enet_list_clear(&host->peers->sentReliableCommands);
@@ -339,7 +339,6 @@ bool server::sendEnetPacket(ENetPacket* packet, bool client)
     else if (enet_peer_send(peer, 0, packet) != 0)
     {
         printf("Error %s\n", "The packet could not be sent due to the enet_peer_send function return false");
-        enet_packet_destroy(packet);
         goto failed;
     }
     else
@@ -352,6 +351,7 @@ bool server::sendEnetPacket(ENetPacket* packet, bool client)
 
     return true;
 failed:
+    enet_packet_destroy(packet);
     unlockThread();
     return false;
 }
